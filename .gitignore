@@ -1,0 +1,12 @@
+# IDE
+/.settings
+/.buildpath
+/.project
+
+# composer
+/vendor
+
+# binaries
+/bin/*
+!/bin/clockodo
+/clockodo.yml

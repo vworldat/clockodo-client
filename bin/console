@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+use Clockodo\Application\Application;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Debug\Debug;
+
+$rootDir = dirname(__DIR__);
+require $rootDir.'/vendor/autoload.php';
+
+$input = new ArgvInput();
+$debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption(array('--no-debug', ''));
+
+if ($debug) {
+    Debug::enable();
+    require_once $rootDir.'/vendor/symfony/var-dumper/Resources/functions/dump.php';
+}
+
+$app = new Application($rootDir);
+$app->registerCommandsDirectory($rootDir.'/src/Clockodo/Command', 'Clockodo\Command');
+$app->run();

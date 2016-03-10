@@ -1,0 +1,25 @@
+name: c33s/clockodo-client
+license: MIT
+type: project
+description: 'Command line interface for clockodo.com time tracking'
+autoload:
+    psr-4:
+        '': src/
+
+require:
+    symfony/console:    ~3.0
+    symfony/debug:      ~3.0
+    symfony/finder:     ~3.0
+    symfony/var-dumper: ~3.0
+    symfony/yaml:       ~3.0
+
+    guzzlehttp/guzzle:  ~6.0
+
+require-dev:
+    phpunit/phpunit:    '@stable'
+
+config:
+    bin-dir: bin
+
+minimum-stability: stable
+prefer-stable: true
