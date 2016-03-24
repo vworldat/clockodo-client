@@ -21,11 +21,56 @@ class StatusCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $api = $this->getApi();
+        $output->writeln("\n<info>Fetching status information ...</info>");
+        $output->writeln("================================");
         $status = $api->getClockStatus();
 
+        $this->listRunningClock($status, $output);
         $this->listProjects($status, $output);
         $this->listServices($status, $output);
         $this->listDays($status, $output);
+    }
+
+    protected function listRunningClock(ClockStatus $status, OutputInterface $output)
+    {
+        $output->writeln("\n<info>Clock information</info>");
+        $entry = $status->getRunningEntry();
+        if (null === $entry) {
+            $output->writeln("  <comment>Currently there is no running clock</comment>");
+
+            return;
+        }
+
+        $customer = $status->getCustomers()[$entry->getCustomerId()];
+        $projects = $customer->getChildren();
+        $project = null;
+        if (null !== $entry->getProjectId() && isset($projects[$entry->getProjectId()])) {
+            $project = $projects[$entry->getProjectId()];
+        }
+        $service = $status->getServices()[$entry->getServiceId()];
+
+        $table = new Table($output);
+        $table->setHeaders([
+            'Date',
+            'Start',
+            'Duration',
+            'Task',
+            'Customer',
+            'Project',
+            'Service',
+        ]);
+
+        list($date, $time) = explode(' ', $entry->getTimeSince());
+        $table->addRow([
+            $date,
+            $time,
+            preg_replace('/^00:/', '', $entry->getDurationTime()),
+            $entry->getText(),
+            $customer->getName(),
+            $project ? $project->getName() : '',
+            $service->getName(),
+        ]);
+        $table->render();
     }
 
     protected function listProjects(ClockStatus $status, OutputInterface $output)
@@ -80,6 +125,7 @@ class StatusCommand extends BaseCommand
             'Task',
             'Customer',
             'Project',
+            'Service',
         ]);
 
         foreach ($status->getDays() as $day) {

@@ -10,23 +10,16 @@ class Project extends BaseModel
     use IdTrait;
     use NameTrait;
 
-    protected $children = array();
+    /**
+     * @var Customer
+     */
     protected $parent;
 
-    public function __construct(array $data, $parent = null)
+    public function __construct(array $data, Customer $parent = null)
     {
         parent::__construct($data);
 
         $this->parent = $parent;
-    }
-
-    protected function init(array $data)
-    {
-        if (isset($data['projects'])) {
-            foreach ($data['projects'] as $projectData) {
-                $this->children[] = new Project($projectData, $this);
-            }
-        }
     }
 
     /**
@@ -44,17 +37,9 @@ class Project extends BaseModel
      */
     public function canEdit()
     {
-        $access = $this->getValue('edit');
+        $access = $this->getValue('access');
 
         return (boolean) $access['edit'];
-    }
-
-    /**
-     * @return Project[]
-     */
-    public function getChildren()
-    {
-        return $this->children;
     }
 
     /**

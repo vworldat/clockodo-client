@@ -6,7 +6,7 @@ class ClockStatus extends BaseModel
 {
     protected $runningEntry;
 
-    protected $projects = array();
+    protected $customers = array();
 
     protected $services = array();
 
@@ -19,9 +19,9 @@ class ClockStatus extends BaseModel
         }
 
         if (isset($data['projects'])) {
-            foreach ($data['projects'] as $projectData) {
-                $project = new Project($projectData);
-                $this->projects[$project->getId()] = $project;
+            foreach ($data['projects'] as $customerData) {
+                $customer = new Customer($customerData);
+                $this->customers[$customer->getId()] = $customer;
             }
         }
 
@@ -49,11 +49,11 @@ class ClockStatus extends BaseModel
     }
 
     /**
-     * @return Project[]
+     * @return Customer[]
      */
-    public function getProjects()
+    public function getCustomers()
     {
-        return $this->projects;
+        return $this->customers;
     }
 
     /**
@@ -104,17 +104,17 @@ class ClockStatus extends BaseModel
     }
 
     /**
-     * Get flattened array containing both parent and child projects by id.
+     * Get flattened array containing both customers and projects by id.
      *
      * @return Project[]
      */
     public function getAllProjects()
     {
         $projects = [];
-        foreach ($this->getProjects() as $project) {
-            $projects[$project->getId()] = $project;
-            foreach ($project->getChildren() as $child) {
-                $projects[$child->getId()] = $child;
+        foreach ($this->getCustomers() as $customer) {
+            $projects[$customer->getId()] = $customer;
+            foreach ($customer->getChildren() as $project) {
+                $projects[$project->getId()] = $project;
             }
         }
 
