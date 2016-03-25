@@ -2,12 +2,15 @@
 namespace Clockodo;
 
 use Clockodo\Model\ClockStatus;
+use Clockodo\Model\Entry;
+use Clockodo\Model\GroupedEntry;
 use Clockodo\Model\Project;
 use Clockodo\Model\Service;
-use Clockodo\Model\Entry;
 
 class Api
 {
+    const DATETIME_FORMAT = 'Y-m-d H:i:s';
+
     /**
      * @var Client
      */
@@ -63,5 +66,73 @@ class Api
 
             return $entry;
         }
+    }
+
+    /**
+     * Get grouped entries for the given date range.
+     *
+     * Possible values to use in $groupedBy are:
+     * - customers_id
+     * - projects_id
+     * - services_id
+     * - users_id
+     * - texts_id
+     * - billable
+     * - is_lumpSum
+     * - year
+     * - week
+     * - month
+     * - day
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param array     $groupedBy
+     */
+    public function getGroupedEntries(\DateTime $startDate, \DateTime $endDate, array $groupedBy)
+    {
+        $result = $this->client->getResource(
+            'entrygroups',
+            null,
+            [
+                'time_since' => $startDate->format(static::DATETIME_FORMAT),
+                'time_until' => $endDate->format(static::DATETIME_FORMAT),
+                'grouping' => $groupedBy,
+            ]
+        );
+
+        $grouped = [];
+        foreach ($result['groups'] as $data) {
+            $grouped[] = new GroupedEntry($data);
+        }
+
+        return $grouped;
+    }
+
+    /**
+     * Get entries for the given date range.
+     *
+     * TODO: filtering and pagination
+     *
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @return Entry[]
+     */
+    public function getEntries(\DateTime $startDate, \DateTime $endDate)
+    {
+        $result = $this->client->getResource(
+            'entries',
+            null,
+            [
+                'time_since' => $startDate->format(static::DATETIME_FORMAT),
+                'time_until' => $endDate->format(static::DATETIME_FORMAT),
+            ]
+        );
+
+        $entries = [];
+        foreach ($result['entries'] as $data) {
+            $entries[] = new Entry($data);
+        }
+
+        return $entries;
     }
 }

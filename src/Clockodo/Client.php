@@ -3,9 +3,9 @@
 namespace Clockodo;
 
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Exception\RequestException;
 
 class Client
 {
@@ -34,9 +34,14 @@ class Client
      *
      * @return array
      */
-    public function callResource($method, $type, $id = null, array $data = array())
+    public function callResource($method, $type, $id = null, array $data = [])
     {
-        $uri = $this->buildUri($type, $id);
+        if ('GET' === $method) {
+            $uri = $this->buildUri($type, $id, $data);
+            $data = [];
+        } else {
+            $uri = $this->buildUri($type, $id);
+        }
 
         $request = new Request($method, $uri, [
             'X-ClockodoApiUser' => $this->config->getApiUser(),
@@ -63,12 +68,13 @@ class Client
      *
      * @param string $type
      * @param string $id
+     * @param array  $data
      *
      * @return array JSON data
      */
-    public function getResource($type, $id = null)
+    public function getResource($type, $id = null, array $data = [])
     {
-        return $this->callResource('GET', $type, $id);
+        return $this->callResource('GET', $type, $id, $data);
     }
 
     /**
@@ -103,14 +109,20 @@ class Client
      *
      * @param string $type
      * @param string $id
+     * @param array  $params
      *
      * @return string
      */
-    protected function buildUri($type, $id = null)
+    protected function buildUri($type, $id = null, array $params = [])
     {
-        $uri = static::API_BASEURI.'/'.$type;
+        $uri = static::API_BASEURI.$type;
         if (null !== $id) {
             $uri .= '/'.$id;
+        }
+
+        $queryString = http_build_query($params);
+        if ($queryString) {
+            $uri .= '?'.$queryString;
         }
 
         return $uri;
@@ -121,8 +133,7 @@ class Client
      */
     protected function getGuzzleClient()
     {
-        $guzzle = new GuzzleClient([
-        ]);
+        $guzzle = new GuzzleClient();
 
         return $guzzle;
     }
